@@ -1,0 +1,19 @@
+header {
+    text-align: center;
+    padding: 20px;
+    background-color:darkslategrey;
+    position: relative;
+}
+
+footer{
+    text-align: center;
+    background-color: dimgray;
+}
+
+.f{
+    margin: 10rem;
+}
+
+.m {
+    
+}

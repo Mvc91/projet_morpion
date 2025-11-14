@@ -1,0 +1,4 @@
+[[routes]]
+url = ""
+controleur = "controleurs/accueil.py"
+template = "templates/accueil.html"
