@@ -1,5 +1,23 @@
-{%extends "base.html" %}
+{% extends "base.html" %}
 
 {% block main_content %}
+    <h2>Bienvenue dans le jeu des morpions avancé</h2>
+    <h3>nombres d'instances des morpions:{{ REQUEST_VARS['morpions'] }}</h3>
+    <h3>nombres d'instances des équipes:{{ REQUEST_VARS['equipes'] }}</h3>
+    <h3>nombres d'instances des parties:{{ REQUEST_VARS['parties'] }}</h3>
 
+    <h3>Top 3 des équipes avec le plus des victoires</h3>
+    <ul>
+        {% for instance in REQUEST_VARS['top'] %}
+            <li>{{instance[0]}}</li>
+        {% endfor %}
+    </ul>
+
+    <h3>partie la plus rapide et la plus longue</h3>
+    <ul>
+        {% for instance in REQUEST_VARS['duree'] %}
+            <li>plus rapide: {{#instance[0]}}, {{instance[1]}}</li>
+            <li>plus longue: {{#instance[0]}}, {{instance[2]}}</li>
+        {% endfor %}
+    </ul>
 {% endblock %}

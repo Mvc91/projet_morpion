@@ -22,6 +22,7 @@ def top_equipes(connexion):
     return execute_select_query(connexion, query)
 
 def duree_partie(connexion):
-    query = """select id_partie, min(date_debut - date_fin) as "la plus rapide", max(date_debut - date_fin) as "la plus longue" from parties"""
+    query = """select id_partie, min(date_debut - date_fin) as "la plus rapide", max(date_debut - date_fin) as "la plus longue" from parties group by id_partie"""
     return execute_select_query(connexion, query)
 
+ 

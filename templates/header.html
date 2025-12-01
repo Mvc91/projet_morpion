@@ -1,10 +1,12 @@
 <header>
-    <div style="float: left;">
+    <div class="header-left" style="float: left;">
         <a href="/">
-            <img src="{{ SESSION['DIRECTORY'] }}/static/img/t2.png" width="30%" height="3%">
+            <img src="{{ SESSION['DIRECTORY'] }}/static/img/phto.png" class="logo">
         </a>
     </div>
-    <h1>{{ SESSION['APP'] }}</h1>
-    <strong>{{ SESSION['BASELINE'] }}</strong>
+    <div class="header-right">
+            <h1>{{ SESSION['APP'] }}</h1>
+            <strong>{{ SESSION['BASELINE'] }}</strong>
+    </div>
 </header>
 

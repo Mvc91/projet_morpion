@@ -1,8 +1,38 @@
 header {
-    text-align: center;
-    padding: 20px;
-    background-color:darkslategrey;
-    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 0 0.8rem;
+    background-color: #0d0d0d;
+    border-bottom: 3px solid #ad00ff;
+    height: 120px; 
+    box-sizing: border-box;
+}
+
+
+.header-left{
+    flex: 0 0 120px; 
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+.header-left .logo{
+    height: 100%;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+.header-right{
+    margin-left: 30rem;
+    padding-right: 20px;
+    color: white;
+    font-family: 'Courier New', Courier, monospace;
+    text-shadow: 0 0 10px #00efff, 0 0 20px #00efff, 0 0 30px #00efff;
+    flex: 1 1 auto;
 }
 
 footer{
@@ -10,10 +40,22 @@ footer{
     background-color: dimgray;
 }
 
-.f{
-    margin: 10rem;
-}
+.m{ 
+    display:flex; 
+    gap:1rem; 
+    align-items:flex-start; 
+    padding:1rem;
+ }
 
-.m {
-    
-}
+/* Simple menu with pleasant colors and small animations */
+.menu{ width: 220px; background: linear-gradient(180deg,#0f172a,#0b1220); padding: 0.6rem; border-radius:12px; box-shadow: 0 8px 22px rgba(2,6,23,0.35); }
+.menu ul{ list-style:none; margin:0; padding:0; }
+.menu li{ margin:0.5rem 0; }
+.menu a{ display:block; padding:0.65rem 0.9rem; color:#e6f0ff; text-decoration:none; border-radius:8px; font-weight:700; transition: transform 180ms ease, background 180ms ease, box-shadow 180ms ease; position:relative; }
+.menu a:hover{ transform: translateX(6px); background: linear-gradient(90deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)); box-shadow: 0 8px 18px rgba(2,6,23,0.28); }
+.menu a::after{ content:''; position:absolute; left:12px; right:auto; bottom:8px; height:3px; width:0; background: linear-gradient(90deg,#ffd166,#ff9a8b); border-radius:3px; transition: width 220ms ease; }
+.menu a:hover::after{ width:28px; }
+.menu a.active{ background: linear-gradient(90deg,#0b3d91,#124b9f); color:#fff; box-shadow: 0 10px 26px rgba(11,61,145,0.18); }
+
+/* keep main flexible */
+main{ flex:1 1 auto; }
