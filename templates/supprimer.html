@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+<h2>voici les equipes présents:</h2>
+{% if REQUEST_VARS['message'] %}
+    {% set cls = REQUEST_VARS['message'] %}
+    {% set txt = REQUEST_VARS['message'] %}
+    <p class="{{ cls }}">{{ txt }}</p>
+{% endif %}
+<ul>
+    {% for instance in REQUEST_VARS['equipes'] %}
+    <li>{{ instance[1] }}</li>
+    {% endfor %}
+</ul>
+
+<form method="post" action="/supprimer">
+    <div>
+        <label for="nom">Nom de l'équipe à supprimer</label>
+        <input id="nom" name="nom" placeholder="Nom" required/>
+    </div>
+
+    <button type="submit">supprimer</button>
+</form>
+{% endblock %}

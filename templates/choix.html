@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+<h2>faites votre choix:</h2>
+{% if REQUEST_VARS['message'] %}
+    {% set cls = REQUEST_VARS['message'] %}
+    {% set txt = REQUEST_VARS['message'] %}
+    <p class="{{ cls }}">{{ txt }}</p>
+{% endif %}
+<form method="post" action="/choix">
+    <label for="taille_grille">taille de la grille</label>
+    <select name="taille_grille">
+    {% for i in REQUEST_VARS['configuration'] %}
+        <option value="{{i[1]}}">{{ i[1] }}</option>
+    {% endfor %}
+    </select>
+    <br/><br/>
+    <label for="nb_tours_max">nombres des tours max</label>
+    <select name="nb_tours_max">
+    {% for i in REQUEST_VARS['configuration'] %}
+        <option value="{{i[2]}}">{{ i[2] }}</option>
+    {% endfor %}
+    </select>
+
+    <br/><br/>
+ 
+    <label for="equipes1">choisir équipe 1 :</label>
+    <select name="equipes1">
+    {% for i in REQUEST_VARS['equipes'] %}
+        <option value="{{i[0]}}">{{ i[1] }}</option>
+    {% endfor %}
+    </select>
+    
+    <br/><br/>
+
+    <label for="equipes2">choisir équipe 2:</label>
+    <select name="equipes2">
+    {% for i in REQUEST_VARS['equipes'] %}
+        <option value="{{i[0]}}">{{ i[1] }}</option>
+    {% endfor %}
+    </select>
+
+    <br/><br/><br/>
+
+    <button type="submit">choix final</button>
+</form>
+
+{% endblock %}

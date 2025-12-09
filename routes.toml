@@ -2,3 +2,33 @@
 url = ""
 controleur = "controleurs/accueil.py"
 template = "templates/accueil.html"
+
+[[routes]]
+url="creer"
+controleur = "controleurs/creer.py"
+template = "templates/creer.html"
+
+[[routes]]
+url="supprimer"
+controleur = "controleurs/supprimer.py"
+template = "templates/supprimer.html"
+
+[[routes]]
+url="choix"
+controleur = "controleurs/choix.py"
+template = "templates/choix.html"
+
+[[routes]]
+url="Jouer"
+controleur = "controleurs/jouer.py"
+template = "templates/jouer.html"
+
+[[routes]]
+url="choix"
+controleur = "controleurs/choix.py"
+template = "templates/choix.html"
+
+[[routes]]
+url="Jouer"
+controleur = "controleurs/jouer.py"
+template = "templates/jouer.html"

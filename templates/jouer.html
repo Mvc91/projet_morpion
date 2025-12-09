@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+<h2>Partie en cours</h2>
+
+{% if REQUEST_VARS.message %}
+  {% set cls = 'info' if REQUEST_VARS.message[0]=='info' else ('success' if REQUEST_VARS.message[0]=='success' else 'error') %}
+  <div class="message {{ cls }}">{{ REQUEST_VARS.message[1] }}</div>
+{% endif %}
+
+{%if REQUEST_VARS.grille %}
+  <div style="display: flex; gap: 32px; margin-top: 20px;">
+    <div> <!-- colonne a gauche de l'equipe 1 -->
+      <h3>{{ REQUEST_VARS.partie.equipes1_nom }}</h3>
+      <div>
+        {% for m in REQUEST_VARS.morpions1 %}
+          <div style="gap: 8px; padding: 8px; border: 32px solid blue;">
+            <img src="{{ SESSION.DIRECTORY }}/{{ m[2] }}" alt="{{ m[1] }}" style="width: 20px; height: 20px;">
+            <h4><strong>{{ m[1] }}</strong></h4>
+            <p>PV:{{ m[3] }} ATQ:{{ m[4] }} PM:{{ m[5] }} PR:{{ m[6] }}</p>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div> <!--colonne centrale ou y'aura la grille et pouvoir placer un morpion-->
+      <h3>Grille {{ REQUEST_VARS.partie.taille_grille }}x{{ REQUEST_VARS.partie.taille_grille }}</h3>
+      <div style="display: grid; grid-template-columns: repeat({{ REQUEST_VARS.partie.taille_grille}}, 60px); gap: 4px; border: 2px solid noir;"> <!--la partie pour la grille-->
+        {% for ligne in REQUEST_VARS.grille %}
+          {% for case in ligne %}
+            <div style="width: 60px; height: 60px; border: 2px solid gray; padding: 8px; display:flex; align-items:center; justify-content:center; background:whitesmoke; font-size:10px;">
+              {% if case %}
+                {% set morpion_trouve= namespace(name='?') %}
+                {% for m in REQUEST_VARS.morpions1 + REQUEST_VARS.morpions2 %}
+                  {% if m[0] == case %}
+                    {% set morpion_trouve.nom = m[1] %}
+                  {% endif %}
+                {% endfor %}
+                {{ morpion_trouve.nom }}
+              {% else %}
+                &nbsp;
+              {% endif %}
+            </div>
+          {% endfor %}
+        {% endfor %}
+      </div>
+
+      <div style="margin-top:16px; padding:12px; border:1px solid #ccc; background:#f9f9f9;">
+      <h4>Placer un morpion</h4>
+      <form method="post" action="/Jouer">
+        <div>
+          <label>choisir un morpion :</label>
+          <select name="id_morpion" required>
+            {% if REQUEST_VARS.partie.joueur_actuel == 1 %}
+              {% for m in REQUEST_VARS.morpions1 %}
+                <option value="{{ m[0] }}">{{ m[1] }}</option>
+              {% endfor %}
+            {% else %}
+              {% for m in REQUEST_VARS.morpions2 %}
+                <option value="{{ m[0] }}">{{ m[1] }}</option>
+              {% endfor %}
+            {% endif %}
+          </select>
+        </div>
+
+        <div>
+          <label>Ligne (0 a {{ REQUEST_VARS.partie.taille_grille - 1 }})</label>
+          <input type="number" name="ligne" min="0" max="{{ REQUEST_VARS.partie.taille_grille - 1 }}" required>
+        </div>
+
+        <div>
+          <label>Colonne (0 a {{ REQUEST_VARS.partie.taille_grille - 1 }})</label>
+          <input type="number" name="colonne" min="0" max="{{ REQUEST_VARS.partie.taille_grille - 1 }}" required>
+        </div>
+
+        <button type="submit">Placer</button>
+      </form>
+    </div>
+    </div>
+
+    
+
+
+    <div> <!-- colonne a gauche de l'equipe 1 -->
+      <h3>{{ REQUEST_VARS.partie.equipes2_nom }}</h3>
+      <div>
+        {% for m in REQUEST_VARS.morpions2 %}
+          <div style="gap: 8px; padding: 8px; border: 32px solid red;">
+            <img src="{{ SESSION.DIRECTORY }}/{{ m[2] }}" alt="{{ m[1] }}" style="width: 20px; height: 20px;">
+            <h4><strong>{{ m[1] }}</strong></h4>
+            <p>PV:{{ m[3] }} ATQ:{{ m[4] }} PM:{{ m[5] }} PR:{{ m[6] }}</p>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+{% else %}
+  <p>Paramètres manquants. <a href="/choix">Allez d'abord sur 'choisir'</a></p>
+{% endif %}
+
+{% endblock %}

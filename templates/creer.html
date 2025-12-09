@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+<h2>Créer une nouvelle équipe</h2>
+
+{% if REQUEST_VARS['message'] %}
+    {% set cls = REQUEST_VARS['message'][0] %}
+    {% set txt = REQUEST_VARS['message'][1] %}
+    <p class="{{ cls }}">{{ txt }}</p>
+{% endif %}
+
+<form method="post" action="/creer" class="form-create-team">
+    <input type="hidden" name="action" value="create_team" />
+
+    <div>
+        <label for="nom">Nom de l'équipe</label>
+        <input id="nom" name="nom" placeholder="Nom de l'équipe" required />
+    </div>
+
+    <div>
+        <label for="couleur">Couleur (#rrggbb)</label>
+        <input id="couleur" name="couleur" placeholder="#1e90ff" required />
+    </div>
+
+    <div>
+        <label>Choisissez entre 6 et 8 morpions :</label>
+        <div class="grid-morpions">
+            {% for m in REQUEST_VARS['morpions'] %}
+                <label class="morpion-item">
+                    <input type="checkbox" name="morpions" value="{{ m[0] }}" />
+                    <img src="{{ url_for(m[2]) }}" alt="{{ m[1] }}" style="height:60px; width:auto;" />
+                    <span>{{ m[1] }}</span>
+                </label>
+            {% endfor %}
+        </div>
+    </div>
+
+    <button type="submit">Créer l'équipe</button>
+</form>
+
+{% endblock %}
