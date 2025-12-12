@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+<h2>🎮 Partie Avancée - Mode Combat</h2>
+
+{% if REQUEST_VARS.message %}
+  {% set cls = 'info' if REQUEST_VARS.message[0]=='info' else ('success' if REQUEST_VARS.message[0]=='success' else ('victoire' if REQUEST_VARS.message[0]=='victoire' else 'error')) %}
+  <div class="message {{ cls }}" style="{% if REQUEST_VARS.message[0]=='victoire' %}background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-size: 1.5em; padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: celebration 0.5s ease;{% endif %}">
+    {{ REQUEST_VARS.message[1] | replace('\n', '<br>') | safe }}
+  </div>
+{% endif %}
+
+{% if REQUEST_VARS.partie_terminee %}
+  <div style="text-align: center; margin: 20px;">
+    <a href="/choix" style="display: inline-block; padding: 15px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 10px; font-size: 1.2em; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
+      🔄 Nouvelle Partie
+    </a>
+  </div>
+{% endif %}
+
+{% if REQUEST_VARS.grille %}
+<div style="margin-top: 20px;">
+  <div style="text-align: center; padding: 10px; background: #f0f0f0; border-radius: 8px; margin-bottom: 20px;">
+    <h3 style="margin: 5px;">Tour {{ REQUEST_VARS.partie.tour }} / {{ REQUEST_VARS.partie.nb_tours_max }}</h3>
+    <p style="margin: 5px; font-size: 1.2em;">
+      {% if REQUEST_VARS.partie.joueur_actuel == 1 %}
+        🔵 C'est au tour de <strong>{{ REQUEST_VARS.partie.equipes1_nom }}</strong>
+      {% else %}
+        🔴 C'est au tour de <strong>{{ REQUEST_VARS.partie.equipes2_nom }}</strong>
+      {% endif %}
+    </p>
+  </div>
+
+  <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+    <!-- Équipe 1 -->
+    <div style="flex: 1; min-width: 250px; background: #e3f2fd; padding: 15px; border-radius: 10px; border: 3px solid #2196F3;">
+      <h3 style="text-align: center; color: #1976D2;">🔵 {{ REQUEST_VARS.partie.equipes1_nom }}</h3>
+      
+      <h4>Morpions disponibles :</h4>
+      {% for m in REQUEST_VARS.morpions1 %}
+        {% if m[0] not in REQUEST_VARS.partie.morpions_etat %}
+          <div style="background: white; padding: 10px; margin: 8px 0; border-radius: 8px; border-left: 4px solid #2196F3;">
+            <strong>{{ m[1] }}</strong><br>
+            ❤️ PV: {{ m[3] }} | ⚔️ ATQ: {{ m[4] }} | 🔮 Mana: {{ m[5] }} | 🎯 Réussite: {{ m[6] }}
+          </div>
+        {% endif %}
+      {% endfor %}
+      
+      <h4 style="margin-top: 15px;">Sur la grille :</h4>
+      {% for id, etat in REQUEST_VARS.partie.morpions_etat.items() %}
+        {% if etat.equipe == 1 and etat.pv > 0 %}
+          <div style="background: {% if etat.pv <= etat.pv_max / 3 %}#ffcdd2{% elif etat.pv <= etat.pv_max / 2 %}#fff9c4{% else %}white{% endif %}; padding: 10px; margin: 8px 0; border-radius: 8px; border-left: 4px solid #2196F3;">
+            <strong>{{ etat.nom }}</strong> [{{ etat.ligne }}, {{ etat.col }}]<br>
+            ❤️ {{ etat.pv }}/{{ etat.pv_max }} | ⚔️ {{ etat.attaque }} | 🔮 {{ etat.mana }}/{{ etat.mana_max }} | 🎯 {{ "%.1f"|format(etat.reussite) }}
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    <!-- Grille centrale -->
+    <div style="flex: 0 0 auto; text-align: center;">
+      <h3>Grille {{ REQUEST_VARS.partie.taille_grille }}x{{ REQUEST_VARS.partie.taille_grille }}</h3>
+      <div style="display: grid; grid-template-columns: repeat({{ REQUEST_VARS.partie.taille_grille }}, 80px); gap: 5px; margin: 0 auto;">
+        {% for i in range(REQUEST_VARS.partie.taille_grille) %}
+          {% for j in range(REQUEST_VARS.partie.taille_grille) %}
+            <div style="width: 80px; height: 80px; border: 2px solid #333; background: {% if (i, j) in REQUEST_VARS.partie.cases_detruites %}#000; background-image: repeating-linear-gradient(45deg, #000 0px, #000 10px, #ff0000 10px, #ff0000 20px){% elif REQUEST_VARS.grille[i][j] %}{% if REQUEST_VARS.partie.morpions_etat[REQUEST_VARS.grille[i][j]].equipe == 1 %}#bbdefb{% else %}#ffcdd2{% endif %}{% else %}#f5f5f5{% endif %}; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.8em; padding: 5px; box-sizing: border-box; border-radius: 5px;">
+              {% if (i, j) in REQUEST_VARS.partie.cases_detruites %}
+                <div style="color: white; font-size: 2em;">☠️</div>
+              {% elif REQUEST_VARS.grille[i][j] %}
+                {% set morpion = REQUEST_VARS.partie.morpions_etat[REQUEST_VARS.grille[i][j]] %}
+                <strong style="font-size: 0.9em;">{{ morpion.nom[:8] }}</strong>
+                <div style="font-size: 0.75em; margin-top: 2px;">
+                  ❤️{{ morpion.pv }}<br>
+                  ⚔️{{ morpion.attaque }} 🔮{{ morpion.mana }}
+                </div>
+              {% else %}
+                <span style="color: #999; font-size: 0.8em;">[{{ i }},{{ j }}]</span>
+              {% endif %}
+            </div>
+          {% endfor %}
+        {% endfor %}
+      </div>
+      
+      <!-- Légende -->
+      <div style="margin-top: 15px; font-size: 0.9em; text-align: left; background: #f9f9f9; padding: 10px; border-radius: 8px;">
+        <strong>Légende :</strong><br>
+        🔵 Bleu = Équipe 1 | 🔴 Rouge = Équipe 2<br>
+        ☠️ = Case détruite (Armageddon)<br>
+        ❤️ = Points de vie | ⚔️ = Attaque | 🔮 = Mana | 🎯 = Réussite
+      </div>
+    </div>
+
+    <!-- Équipe 2 -->
+    <div style="flex: 1; min-width: 250px; background: #ffebee; padding: 15px; border-radius: 10px; border: 3px solid #f44336;">
+      <h3 style="text-align: center; color: #c62828;">🔴 {{ REQUEST_VARS.partie.equipes2_nom }}</h3>
+      
+      <h4>Morpions disponibles :</h4>
+      {% for m in REQUEST_VARS.morpions2 %}
+        {% if m[0] not in REQUEST_VARS.partie.morpions_etat %}
+          <div style="background: white; padding: 10px; margin: 8px 0; border-radius: 8px; border-left: 4px solid #f44336;">
+            <strong>{{ m[1] }}</strong><br>
+            ❤️ PV: {{ m[3] }} | ⚔️ ATQ: {{ m[4] }} | 🔮 Mana: {{ m[5] }} | 🎯 Réussite: {{ m[6] }}
+          </div>
+        {% endif %}
+      {% endfor %}
+      
+      <h4 style="margin-top: 15px;">Sur la grille :</h4>
+      {% for id, etat in REQUEST_VARS.partie.morpions_etat.items() %}
+        {% if etat.equipe == 2 and etat.pv > 0 %}
+          <div style="background: {% if etat.pv <= etat.pv_max / 3 %}#ffcdd2{% elif etat.pv <= etat.pv_max / 2 %}#fff9c4{% else %}white{% endif %}; padding: 10px; margin: 8px 0; border-radius: 8px; border-left: 4px solid #f44336;">
+            <strong>{{ etat.nom }}</strong> [{{ etat.ligne }}, {{ etat.col }}]<br>
+            ❤️ {{ etat.pv }}/{{ etat.pv_max }} | ⚔️ {{ etat.attaque }} | 🔮 {{ etat.mana }}/{{ etat.mana_max }} | 🎯 {{ "%.1f"|format(etat.reussite) }}
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Panel d'actions -->
+  {% if not REQUEST_VARS.partie_terminee %}
+  <div style="margin-top: 30px; background: #fff3e0; padding: 20px; border-radius: 10px; border: 2px solid #ff9800;">
+    <h3 style="text-align: center; color: #e65100;">⚡ Actions disponibles</h3>
+    
+    <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;">
+      <!-- Placer un morpion -->
+      <div style="flex: 1; min-width: 300px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+        <h4>📍 Placer un morpion</h4>
+        <form method="post" action="/avance">
+          <input type="hidden" name="action_type" value="placer">
+          
+          <label>Choisir un morpion :</label>
+          <select name="id_morpion" required style="width: 100%; padding: 8px; margin: 5px 0; border-radius: 5px; border: 1px solid #ccc;">
+            {% if REQUEST_VARS.partie.joueur_actuel == 1 %}
+              {% for m in REQUEST_VARS.morpions1 %}
+                {% if m[0] not in REQUEST_VARS.partie.morpions_etat %}
+                  <option value="{{ m[0] }}">{{ m[1] }} (❤️{{ m[3] }} ⚔️{{ m[4] }} 🔮{{ m[5] }} 🎯{{ m[6] }})</option>
+                {% endif %}
+              {% endfor %}
+            {% else %}
+              {% for m in REQUEST_VARS.morpions2 %}
+                {% if m[0] not in REQUEST_VARS.partie.morpions_etat %}
+                  <option value="{{ m[0] }}">{{ m[1] }} (❤️{{ m[3] }} ⚔️{{ m[4] }} 🔮{{ m[5] }} 🎯{{ m[6] }})</option>
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+          </select>
+          
+          <label>Ligne (0 à {{ REQUEST_VARS.partie.taille_grille - 1 }}) :</label>
+          <input type="number" name="ligne" min="0" max="{{ REQUEST_VARS.partie.taille_grille - 1 }}" required style="width: 100%; padding: 8px; margin: 5px 0; border-radius: 5px; border: 1px solid #ccc;">
+          
+          <label>Colonne (0 à {{ REQUEST_VARS.partie.taille_grille - 1 }}) :</label>
+          <input type="number" name="colonne" min="0" max="{{ REQUEST_VARS.partie.taille_grille - 1 }}" required style="width: 100%; padding: 8px; margin: 5px 0; border-radius: 5px; border: 1px solid #ccc;">
+          
+          <button type="submit" style="width: 100%; padding: 10px; margin-top: 10px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1em;">📍 Placer</button>
+        </form>
+      </div>
+
+      <!-- Attaquer -->
+      <div style="flex: 1; min-width: 300px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+        <h4>⚔️ Attaquer un ennemi</h4>
+        <form method="post" action="/avance">
+          <input type="hidden" name="action_type" value="attaquer">
+          
+          <label>Votre morpion attaquant :</label>
+          <select name="id_attaquant" required style="width: 100%; padding: 8px; margin: 5px 0; border-radius: 5px; border: 1px solid #ccc;">
+            {% for id, etat in REQUEST_VARS.partie.morpions_etat.items() %}
+              {% if etat.equipe == REQUEST_VARS.partie.joueur_actuel and etat.pv > 0 %}
+                <option value="{{ id }}">{{ etat.nom }} [{{ etat.ligne }},{{ etat.col }}] (❤️{{ etat.pv }} ⚔️{{ etat.attaque }} 🎯{{ "%.0f"|format(etat.reussite * 10) }}%)</option>
+              {% endif %}
+            {% endfor %}
+          </select>
+          
+          <label>Cible ennemie (adjacente) :</label>
+          <select name="id_cible" required style="width: 100%; padding: 8px; margin: 5px 0; border-radius: 5px; border: 1px solid #ccc;">
+            {% for id, etat in REQUEST_VARS.partie.morpions_etat.items() %}
+              {% if etat.equipe != REQUEST_VARS.partie.joueur_actuel and etat.pv > 0 %}
+                <option value="{{ id }}">{{ etat.nom }} [{{ etat.ligne }},{{ etat.col }}] (❤️{{ etat.pv }})</option>
+              {% endif %}
+            {% endfor %}
+          </select>
+          
+          <button type="submit" style="width: 100%; padding: 10px; margin-top: 10px; background: #f44336; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1em;">⚔️ Attaquer</button>
+        </form>
+      </div>
+
+      <!-- Lancer un sort -->
+      <div style="flex: 1; min-width: 300px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+        <h4>🔮 Lancer un sort</h4>
+        <form method="post" action="/avance">
+          <input type="hidden" name="action_type" value="sort">
+          
+          <label>Votre mage lanceur :</label>
+          <select name="id_lanceur" required style="width: 100%; padding: 8px; margin: 5px 0; border-radius: 5px; border: 1px solid #ccc;">
+            {% for id, etat in REQUEST_VARS.partie.morpions_etat.items() %}
+              {% if etat.equipe == REQUEST_VARS.partie.joueur_actuel and etat.pv > 0 %}
+                <option value="{{ id }}">{{ etat.nom }} [{{ etat.ligne }},{{ etat.col }}] (🔮{{ etat.mana }} 🎯{{ "%.0f"|format(etat.reussite * 10) }}%)</option>
+              {% endif %}
+            {% endfor %}
+          </select>
+          
+          <label>Type de sort :</label>
+          <select name="sort_type" required style="width: 100%; padding: 8px; margin: 5px 0; border-radius: 5px; border: 1px solid #ccc;">
+            <option value="boule_feu">🔥 Boule de feu (Coût: 2, Dégâts: 3)</option>
+            <option value="soin">💚 Sort de soin (Coût: 1, Soins: +2 PV)</option>
+            <option value="armageddon">💥 Armageddon (Coût: 5, Détruit case)</option>
+          </select>
+          
+          <label>Cible du sort :</label>
+          <select name="id_cible" required style="width: 100%; padding: 8px; margin: 5px 0; border-radius: 5px; border: 1px solid #ccc;">
+            {% for id, etat in REQUEST_VARS.partie.morpions_etat.items() %}
+              {% if etat.pv > 0 %}
+                <option value="{{ id }}">{{ etat.nom }} [{{ etat.ligne }},{{ etat.col }}] {% if etat.equipe == REQUEST_VARS.partie.joueur_actuel %}(Allié){% else %}(Ennemi){% endif %} (❤️{{ etat.pv }})</option>
+              {% endif %}
+            {% endfor %}
+          </select>
+          
+          <button type="submit" style="width: 100%; padding: 10px; margin-top: 10px; background: #9C27B0; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1em;">🔮 Lancer sort</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+{% else %}
+  <p>Paramètres manquants. <a href="/choix">Allez d'abord sur 'choisir'</a></p>
+{% endif %}
+
+{% endblock %}

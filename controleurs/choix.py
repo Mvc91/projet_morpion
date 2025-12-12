@@ -9,6 +9,7 @@ REQUEST_VARS['equipes'] = get_equipes(SESSION['CONNEXION'])
 
 
 if POST:
+    SESSION['id_configuration'] = POST.get('id_configuration', [None])[0]
     SESSION['nb_tours_max'] = POST.get('nb_tours_max', [None])[0]
     SESSION['taille_grille'] = POST.get('taille_grille', [None])[0]
     SESSION['equipes1'] = POST.get('equipes1', [None])[0]

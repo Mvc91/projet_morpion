@@ -59,3 +59,20 @@ footer{
 
 /* keep main flexible */
 main{ flex:1 1 auto; }
+
+/* Animation de célébration pour les victoires */
+@keyframes celebration {
+    0% { transform: scale(0.8) rotate(-5deg); opacity: 0; }
+    50% { transform: scale(1.05) rotate(2deg); }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+/* Style pour les messages de victoire */
+.message.victoire {
+    animation: celebration 0.6s ease-out, pulse 2s ease-in-out infinite 0.6s;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+}

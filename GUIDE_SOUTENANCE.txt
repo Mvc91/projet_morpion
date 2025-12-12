@@ -1,0 +1,515 @@
+================================================================================
+                    GUIDE DE SOUTENANCE - PROJET MORPION RPG
+                          Base de Données et Programmation Web
+================================================================================
+
+🎯 DURÉE TOTALE : 20 minutes (5 min démo + 15 min questions)
+
+================================================================================
+                        PARTIE 1 : DÉMONSTRATION (5 MINUTES)
+================================================================================
+
+📝 SCRIPT DE PRÉSENTATION
+--------------------------
+
+[INTRODUCTION - 30 secondes]
+"Bonjour, nous allons vous présenter notre projet : un jeu de morpion avancé 
+avec système de combat RPG. Notre application permet de jouer au morpion 
+classique, mais aussi une version avancée avec des morpions qui ont des 
+statistiques (PV, attaque, mana, réussite) et peuvent s'affronter avec des 
+attaques et des sorts magiques."
+
+
+[DÉMONSTRATION BASE DE DONNÉES - 1 minute]
+"Commençons par la structure de notre base de données PostgreSQL. Nous avons 
+implémenté 6 tables :
+- morpions : contient les statistiques de chaque morpion avec une contrainte 
+  CHECK pour que la somme des points soit toujours 15
+- equipes : stocke les équipes avec leur nom et couleur uniques
+- equipes_morpions : table d'association N:M entre équipes et morpions
+- configurations : définit la taille de grille et nombre de tours maximum
+- parties : enregistre chaque partie jouée avec les équipes et le gagnant
+- journal : historise toutes les actions de chaque partie
+
+Notre base contient 6 équipes différentes avec chacune entre 6 et 8 morpions."
+
+
+[DÉMONSTRATION MODE NORMAL - 1 minute]
+"Montrons d'abord le mode classique. Je clique sur 'Jouer', je choisis deux 
+équipes [choisir Les Dragons de Feu vs Les Gardiens du Cristal], une 
+configuration 3x3 avec 9 tours maximum.
+
+[Placer quelques morpions rapidement]
+Chaque joueur place ses morpions à tour de rôle. Quand un joueur réalise un 
+alignement de 3, il gagne avec un message de victoire et des animations 
+célébratoires."
+
+
+[DÉMONSTRATION MODE AVANCÉ - 2 minutes]
+"Le mode avancé est plus complexe. Je sélectionne 'Jouer mode avancé', les 
+mêmes équipes, une grille 4x4 avec 16 tours maximum.
+
+[Placer un morpion]
+On voit que chaque morpion a des statistiques : PV, attaque, mana et réussite. 
+Le panneau de gauche montre l'équipe 1 en bleu, celui de droite l'équipe 2 en 
+rouge. Les morpions disponibles sont listés, et ceux placés apparaissent sur 
+la grille avec leurs stats.
+
+[Effectuer une attaque]
+Maintenant je place un morpion ennemi adjacent et je lance une attaque. La 
+réussite est calculée avec un tirage aléatoire. Si l'attaque réussit, elle 
+inflige des dégâts. Quand les PV tombent à 0, le morpion meurt et disparaît 
+de la grille.
+
+[Lancer un sort]
+Nous avons implémenté 3 sorts :
+- Boule de feu : coûte 2 mana, inflige 3 dégâts à un ennemi
+- Sort de soin : coûte 1 mana, redonne 2 PV à un allié
+- Armageddon : coûte 5 mana, détruit définitivement une case de la grille
+
+[Si le temps le permet, montrer Armageddon]
+Regardez, après l'Armageddon, la case est détruite et ne peut plus être utilisée.
+
+Les conditions de victoire sont multiples : alignement de N morpions, tous les 
+ennemis éliminés, adversaire ne pouvant plus agir, ou nombre maximum de tours 
+atteint."
+
+
+[CONCLUSION - 30 secondes]
+"Toutes les parties et actions sont enregistrées en base de données dans les 
+tables parties et journal. Notre projet respecte l'architecture MVC avec des 
+contrôleurs Python, des templates Jinja2 et un modèle pour l'accès aux données."
+
+
+================================================================================
+                    PARTIE 2 : QUESTIONS POSSIBLES (15 MINUTES)
+================================================================================
+
+📚 QUESTIONS SUR LA BASE DE DONNÉES
+------------------------------------
+
+Q1 : Expliquez votre schéma relationnel.
+R : Nous avons 6 tables :
+    - MORPIONS(#id_morpion, nom, image, points_vie, points_attaque, 
+      points_mana, points_reussite)
+    - EQUIPES(#id_equipe, nom, couleur, date_creation)
+    - EQUIPES_MORPIONS(#p(id_equipe), #p(id_morpion)) - clé primaire composite
+    - CONFIGURATIONS(#id_configuration, taille_grille, nb_tours_max)
+    - PARTIES(#id_partie, id_equipe_a, id_equipe_b, id_configuration, 
+      date_debut, date_fin, id_equipe_gagnante)
+    - JOURNAL(#p(id_partie), #p(numero_action), date_action, texte_action)
+    
+    Les relations sont : morpions N:M equipes via equipes_morpions, 
+    configurations 1:N parties, equipes 1:N parties (3 fois : equipe_a, 
+    equipe_b, gagnante), parties 1:N journal.
+
+
+Q2 : Pourquoi avoir utilisé une contrainte CHECK sur morpions ?
+R : Pour garantir l'équilibre du jeu. Chaque morpion doit avoir exactement 
+    15 points répartis entre PV, attaque, mana et réussite. Cela empêche 
+    d'avoir un morpion trop puissant avec des stats maximales partout.
+    Contrainte : CHECK(points_attaque + points_mana + points_reussite + 
+    points_vie = 15)
+
+
+Q3 : Expliquez les clés étrangères de la table PARTIES.
+R : PARTIES a 4 clés étrangères :
+    - id_equipe_a REFERENCES equipes(id_equipe) ON DELETE CASCADE
+    - id_equipe_b REFERENCES equipes(id_equipe) ON DELETE CASCADE
+    - id_configuration REFERENCES configurations(id_configuration) ON DELETE CASCADE
+    - id_equipe_gagnante REFERENCES equipes(id_equipe) ON DELETE SET NULL
+    
+    Les 3 premières utilisent CASCADE car si une équipe ou configuration est 
+    supprimée, les parties associées n'ont plus de sens. La dernière utilise 
+    SET NULL car on veut garder l'historique des parties même si l'équipe 
+    gagnante est supprimée.
+
+
+Q4 : Quelle est la cardinalité entre morpions et equipes ?
+R : C'est une relation plusieurs-à-plusieurs (N:M). Un morpion peut appartenir 
+    à plusieurs équipes différentes, et une équipe possède plusieurs morpions 
+    (entre 6 et 8 dans notre base). Cette relation N:M est matérialisée par 
+    la table d'association EQUIPES_MORPIONS avec une clé primaire composite.
+
+
+Q5 : Comment gérez-vous l'historique des parties ?
+R : Via deux tables :
+    1) PARTIES : stocke les métadonnées (équipes, dates, gagnant)
+    2) JOURNAL : stocke chaque action avec un numéro d'action séquentiel
+    
+    La clé primaire de JOURNAL est composite (id_partie, numero_action), ce 
+    qui permet de numéroter les actions dans chaque partie indépendamment.
+
+
+Q6 : Écrivez une requête SQL pour trouver l'équipe ayant gagné le plus de parties.
+R : SELECT e.nom, COUNT(*) as nb_victoires
+    FROM equipes e
+    JOIN parties p ON e.id_equipe = p.id_equipe_gagnante
+    GROUP BY e.id_equipe, e.nom
+    ORDER BY nb_victoires DESC
+    LIMIT 1;
+
+
+Q7 : Comment récupérer tous les morpions d'une équipe ?
+R : SELECT m.id_morpion, m.nom, m.points_vie, m.points_attaque, 
+           m.points_mana, m.points_reussite
+    FROM morpions m
+    JOIN equipes_morpions em ON m.id_morpion = em.id_morpion
+    WHERE em.id_equipe = ?;
+    
+    C'est ce que fait la fonction get_morpions_equipe() dans morpion_model.py.
+
+
+Q8 : Pourquoi date_fin et id_equipe_gagnante sont NULL dans PARTIES ?
+R : date_fin est NULL quand la partie est en cours. id_equipe_gagnante est 
+    NULL pour les parties non terminées ou les matchs nuls (quand le nombre 
+    maximum de tours est atteint sans vainqueur).
+
+
+📝 QUESTIONS SUR LE SQL
+-----------------------
+
+Q9 : Quelle est la différence entre WHERE et HAVING ?
+R : WHERE filtre les lignes avant le regroupement (GROUP BY), tandis que 
+    HAVING filtre après le regroupement. WHERE s'applique aux lignes 
+    individuelles, HAVING aux groupes.
+    Exemple : WHERE points_vie > 5 filtre les morpions,
+              HAVING COUNT(*) > 3 filtre les groupes.
+
+
+Q10 : Qu'est-ce qu'une jointure interne (INNER JOIN) ?
+R : Une jointure qui ne retourne que les lignes ayant une correspondance dans 
+    les deux tables. Par exemple, JOIN equipes_morpions ne retournera que les 
+    morpions qui appartiennent à au moins une équipe.
+
+
+Q11 : Quelle est la différence entre UNION et UNION ALL ?
+R : UNION élimine les doublons et trie les résultats, UNION ALL garde tous 
+    les résultats y compris les doublons. UNION ALL est plus rapide car pas 
+    de dédoublonnage ni de tri.
+
+
+Q12 : Qu'est-ce qu'une sous-requête corrélée ?
+R : Une sous-requête qui référence des colonnes de la requête externe. Elle 
+    est exécutée une fois par ligne de la requête externe.
+    Exemple : SELECT nom FROM morpions m1 WHERE points_vie > 
+              (SELECT AVG(points_vie) FROM morpions m2 WHERE m2.id_morpion = m1.id_morpion)
+
+
+Q13 : Expliquez les opérations CASCADE et SET NULL.
+R : CASCADE : quand on supprime une ligne, toutes les lignes liées dans 
+              d'autres tables sont aussi supprimées automatiquement
+    SET NULL : quand on supprime une ligne, les clés étrangères qui y font 
+               référence sont mises à NULL
+    Utilisé avec ON DELETE ou ON UPDATE.
+
+
+🐍 QUESTIONS SUR PYTHON
+------------------------
+
+Q14 : Expliquez la structure de votre code Python (avance.py).
+R : Le fichier avance.py est un contrôleur qui :
+    1) Récupère les paramètres de SESSION (équipes, configuration)
+    2) Initialise la partie avec un dictionnaire 'partie_avancee' dans SESSION
+    3) Traite les actions POST (placer, attaquer, sort)
+    4) Met à jour l'état des morpions (PV, mana, position)
+    5) Vérifie les conditions de victoire
+    6) Enregistre les actions en base via morpion_model.py
+    7) Passe les données à afficher via REQUEST_VARS au template
+
+
+Q15 : Comment gérez-vous l'état de la partie entre les requêtes ?
+R : Via la variable SESSION côté serveur. SESSION['partie_avancee'] est un 
+    dictionnaire contenant :
+    - grille : tableau 2D avec les positions des morpions
+    - morpions_etat : dictionnaire {id: {nom, pv, attaque, mana, ligne, col}}
+    - cases_detruites : ensemble des coordonnées détruites par Armageddon
+    - tour, joueur_actuel, nb_tours_max : gestion du déroulement
+    - id_partie : référence en base de données
+
+
+Q16 : Comment fonctionne le système de réussite des attaques ?
+R : 1) Chaque morpion a un attribut 'reussite' (valeur entre 1 et 10)
+    2) On calcule proba_reussite = min(100, reussite * 10) en pourcentage
+    3) On tire un nombre aléatoire entre 0 et 100 avec random.randint()
+    4) Si tirage <= proba_reussite, l'attaque/sort réussit
+    5) En cas de succès, la réussite augmente de 0.5 pour les prochaines actions
+
+
+Q17 : Expliquez la vérification d'adjacence pour les attaques.
+R : dist_l = abs(attaquant['ligne'] - cible['ligne'])
+    dist_c = abs(attaquant['col'] - cible['col'])
+    
+    Adjacent = (dist_l == 1 et dist_c == 0) OU (dist_l == 0 et dist_c == 1)
+    
+    Cela vérifie que la cible est juste à côté horizontalement ou verticalement,
+    mais pas en diagonale.
+
+
+Q18 : Comment empêchez-vous les attaques entre alliés ?
+R : Avant chaque attaque ou sort offensif, on vérifie :
+    if attaquant['equipe'] == cible['equipe']:
+        REQUEST_VARS['message'] = ('error', "Pas d'attaque entre alliés ! 🛡️")
+    
+    Pour le sort de soin, c'est l'inverse :
+    if lanceur['equipe'] != cible['equipe']:
+        REQUEST_VARS['message'] = ('error', "Impossible de soigner un ennemi ! ⚔️")
+
+
+Q19 : Quelles sont les conditions de victoire ?
+R : 1) Alignement de N morpions (ligne, colonne ou diagonale)
+    2) Tous les morpions adverses placés sont morts
+    3) L'adversaire ne peut plus agir (aucun morpion vivant sur la grille)
+    4) Nombre maximum de tours atteint (match nul)
+    
+    On vérifie après chaque action dans verifier_victoire().
+
+
+Q20 : Comment fonctionnent les trois sorts ?
+R : - Boule de feu : coût 2 mana, inflige 3 dégâts à un ennemi adjacent
+    - Sort de soin : coût 1 mana, +2 PV à un allié (max = pv_max)
+    - Armageddon : coût 5 mana, tue le morpion ciblé et détruit la case 
+                   définitivement (ajoutée à cases_detruites)
+    
+    Chaque sort vérifie le mana disponible, fait un test de réussite, déduit 
+    le coût et applique l'effet.
+
+
+🌐 QUESTIONS SUR HTML/CSS/JINJA2
+---------------------------------
+
+Q21 : Qu'est-ce que Jinja2 et comment l'utilisez-vous ?
+R : Jinja2 est un moteur de templates Python. Il permet d'insérer des variables 
+    et de la logique dans le HTML :
+    - {{ variable }} : affiche une variable
+    - {% if condition %} : structures conditionnelles
+    - {% for item in liste %} : boucles
+    - {% extends "base.html" %} : héritage de templates
+    - {% block nom %} : définit des zones remplaçables
+
+
+Q22 : Expliquez la structure de votre template avance.html.
+R : 1) {% extends "base.html" %} : hérite de la structure commune
+    2) {% block main_content %} : contenu spécifique
+    3) Affichage du message (victoire, succès, erreur)
+    4) Si partie terminée : bouton "Nouvelle Partie"
+    5) Si grille existe :
+       - En-tête avec tour actuel et joueur
+       - 3 colonnes : équipe 1 (bleu) | grille centrale | équipe 2 (rouge)
+       - Chaque équipe liste morpions disponibles et placés avec code couleur 
+         selon PV restants
+       - Grille en CSS Grid avec cases colorées selon équipe ou détruites
+       - 3 formulaires d'actions (placer, attaquer, sort)
+
+
+Q23 : Comment affichez-vous la grille de jeu ?
+R : Avec CSS Grid :
+    <div style="display: grid; grid-template-columns: repeat(4, 80px); gap: 5px;">
+      {% for i in range(taille_grille) %}
+        {% for j in range(taille_grille) %}
+          <div style="...background selon état...">
+            {% if case détruite %}☠️
+            {% elif morpion présent %}stats du morpion
+            {% else %}coordonnées vides
+            {% endif %}
+          </div>
+        {% endfor %}
+      {% endfor %}
+    </div>
+
+
+Q24 : Comment indiquez-vous visuellement l'état de santé des morpions ?
+R : Avec des couleurs de fond conditionnelles :
+    {% if etat.pv <= etat.pv_max / 3 %}#ffcdd2 (rouge clair = critique)
+    {% elif etat.pv <= etat.pv_max / 2 %}#fff9c4 (jaune = blessé)
+    {% else %}white (blanc = bonne santé)
+    {% endif %}
+
+
+Q25 : Expliquez l'utilisation de REQUEST_VARS.
+R : REQUEST_VARS est un dictionnaire passé du contrôleur Python au template 
+    Jinja2. Il contient toutes les données à afficher :
+    - REQUEST_VARS['grille'] : état de la grille
+    - REQUEST_VARS['partie'] : infos sur la partie en cours
+    - REQUEST_VARS['message'] : tuple (type, texte) pour les notifications
+    - REQUEST_VARS['morpions1'], ['morpions2'] : listes des morpions
+    - REQUEST_VARS['partie_terminee'] : booléen pour masquer les actions
+
+
+🏗️ QUESTIONS SUR L'ARCHITECTURE MVC
+-------------------------------------
+
+Q26 : Expliquez l'architecture MVC de votre projet.
+R : Modèle-Vue-Contrôleur :
+    - MODÈLE (model/morpion_model.py) : fonctions d'accès à la base de données
+      (get_equipes, get_morpions_equipe, creer_partie, terminer_partie, etc.)
+    - VUE (templates/*.html) : templates Jinja2 pour l'affichage HTML
+    - CONTRÔLEUR (controleurs/*.py) : logique métier, traitement des requêtes,
+      préparation des données pour la vue
+    
+    Le contrôleur ne fait JAMAIS de SQL directement, il appelle le modèle.
+    La vue ne contient AUCUNE logique métier, juste de l'affichage.
+
+
+Q27 : Pourquoi séparer le modèle du contrôleur ?
+R : - Réutilisabilité : les fonctions du modèle peuvent être utilisées par 
+      plusieurs contrôleurs
+    - Maintenabilité : si la structure de la BD change, on ne modifie que le modèle
+    - Testabilité : on peut tester les requêtes SQL indépendamment de la logique
+    - Sécurité : centralisation des requêtes SQL avec requêtes préparées
+
+
+Q28 : Comment gérez-vous les formulaires ?
+R : 1) Le template affiche un <form method="post" action="/avance">
+    2) Chaque formulaire a un <input type="hidden" name="action_type" value="...">
+    3) Le contrôleur récupère les données avec POST.get('action_type', [None])[0]
+    4) Un if/elif/else traite chaque type d'action
+    5) Après traitement, on stocke un message dans REQUEST_VARS['message']
+    6) Le template affiche le message avec le style approprié
+
+
+Q29 : Qu'est-ce que routes.toml ?
+R : C'est le fichier de configuration qui associe les URLs aux contrôleurs :
+    [jouer]
+    chemin = "/jouer"
+    controleur = "jouer.py"
+    
+    [avance]
+    chemin = "/avance"
+    controleur = "avance.py"
+    
+    Quand l'utilisateur accède à /avance, le serveur bdw-server exécute 
+    controleurs/avance.py.
+
+
+Q30 : Comment les sessions fonctionnent-elles dans votre application ?
+R : SESSION est un dictionnaire côté serveur maintenu entre les requêtes HTTP.
+    Il contient :
+    - SESSION['CONNEXION'] : connexion PostgreSQL
+    - SESSION['HISTORIQUE'] : liste des actions utilisateur
+    - SESSION['equipes1'], ['equipes2'] : équipes choisies
+    - SESSION['taille_grille'], ['nb_tours_max'] : configuration
+    - SESSION['partie_avancee'] : état complet de la partie en cours
+    
+    Les données persistent jusqu'à suppression explicite ou fin de session.
+
+
+🔧 QUESTIONS TECHNIQUES AVANCÉES
+---------------------------------
+
+Q31 : Comment gérez-vous la concurrence d'accès à la base ?
+R : - Chaque requête a sa propre SESSION['CONNEXION']
+    - On fait commit() après chaque modification importante
+    - Les transactions isolent les modifications d'une session
+    - PostgreSQL gère les verrous automatiquement
+
+
+Q32 : Pourquoi utiliser SERIAL pour les clés primaires ?
+R : SERIAL est un type PostgreSQL qui auto-incrémente automatiquement. Cela 
+    garantit l'unicité des clés primaires sans avoir à gérer manuellement les 
+    IDs. Équivalent à INTEGER avec une séquence automatique.
+
+
+Q33 : Comment empêchez-vous les injections SQL ?
+R : En utilisant des requêtes préparées avec des paramètres :
+    cur.execute("SELECT * FROM morpions WHERE id_morpion = %s", (id_morpion,))
+    
+    JAMAIS de concaténation de chaînes :
+    # DANGEREUX : cur.execute(f"SELECT * FROM morpions WHERE id = {id}")
+
+
+Q34 : Expliquez la fonction enregistrer_action().
+R : def enregistrer_action(texte):
+        try:
+            ajouter_action_journal(SESSION['CONNEXION'], partie['id_partie'], 
+                                 partie['numero_action'], texte)
+            SESSION['CONNEXION'].commit()
+            partie['numero_action'] += 1
+        except Exception as e:
+            pass  # Ignorer les erreurs
+    
+    Elle insère une ligne dans la table JOURNAL avec le texte de l'action, 
+    incrémente le numéro d'action, et commit. Le try/except évite que le jeu 
+    plante si l'enregistrement échoue.
+
+
+Q35 : Comment gérez-vous le changement de joueur ?
+R : Après chaque action réussie (placement, attaque, sort) :
+    partie['joueur_actuel'] = 2 if partie['joueur_actuel'] == 1 else 1
+    partie['tour'] += 1
+    
+    On alterne entre 1 et 2, et on incrémente le compteur de tours.
+
+
+📊 QUESTIONS SUR LES CHOIX DE CONCEPTION
+-----------------------------------------
+
+Q36 : Pourquoi avoir créé deux modes de jeu ?
+R : Pour montrer notre maîtrise de différentes complexités :
+    - Mode normal : implémentation simple du morpion classique
+    - Mode avancé : logique complexe avec gestion d'état, combats, sorts, 
+                    conditions multiples de victoire
+    Cela démontre notre capacité à créer des applications web évolutives.
+
+
+Q37 : Pourquoi utiliser des dictionnaires pour morpions_etat ?
+R : Les dictionnaires Python offrent un accès en O(1) par id_morpion, ce qui 
+    est plus rapide qu'une liste. Ils permettent aussi de stocker toutes les 
+    données d'un morpion (PV actuels, mana, position) sans modifier la base.
+
+
+Q38 : Pourquoi utiliser un set() pour cases_detruites ?
+R : Les sets Python garantissent l'unicité et permettent de vérifier rapidement 
+    si une case est détruite avec l'opération 'in' en O(1). C'est plus efficace 
+    qu'une liste.
+
+
+Q39 : Pourquoi stocker l'état dans SESSION plutôt qu'en base de données ?
+R : Pour la performance : on évite de faire des requêtes SQL à chaque action.
+    L'état complet est en mémoire. On sauvegarde seulement les actions dans 
+    JOURNAL pour l'historique. À la fin, on enregistre le résultat dans PARTIES.
+
+
+Q40 : Comment amélioreriez-vous ce projet ?
+R : Plusieurs pistes :
+    - Système de comptes utilisateurs avec authentification
+    - Mode multijoueur en ligne avec WebSockets
+    - Intelligence artificielle pour jouer contre l'ordinateur
+    - Système de classement et statistiques avancées
+    - Interface graphique plus riche avec animations JavaScript
+    - Tests unitaires automatisés
+    - Gestion des erreurs plus robuste avec logs
+
+
+================================================================================
+                                CONSEILS FINAUX
+================================================================================
+
+✅ À FAIRE :
+- Parler clairement et calmement
+- Donner des réponses concises
+- Dire "Je ne sais pas" si vous ne savez pas
+- Avoir le code source ouvert et navigable rapidement
+- Montrer votre maîtrise technique sans hésitation
+- Préparer votre démo pour qu'elle ne dure QUE 5 minutes
+- Vous entraîner à présenter ensemble
+
+❌ À ÉVITER :
+- Perdre du temps sur des détails non essentiels
+- Montrer toutes les pages une par une sans but
+- Dépasser les 5 minutes de démo (pénalité!)
+- Laisser une personne parler tout le temps
+- Chercher dans le code pendant les questions (connaissez votre projet!)
+- Improviser la démo sans scénario préparé
+
+🎯 POINTS CLÉS À METTRE EN AVANT :
+- Contraintes d'intégrité (CHECK, UNIQUE, CASCADE, SET NULL)
+- Architecture MVC bien séparée
+- Gestion d'état complexe avec SESSION
+- Enregistrement en base avec tables PARTIES et JOURNAL
+- Logique métier avancée (combat, sorts, conditions de victoire)
+- Interface utilisateur riche avec feedback visuel
+
+================================================================================
+                                BONNE CHANCE ! 🍀
+================================================================================

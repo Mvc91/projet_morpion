@@ -101,3 +101,40 @@ def get_morpions_equipe(connexion, id_equipe):
                ORDER BY m.nom;"""
     return execute_select_query(connexion, query, [id_equipe])
 
+# Fonctions pour les parties avancées
+
+def creer_partie(connexion, id_equipe_a, id_equipe_b, id_configuration):
+    """Crée une nouvelle partie et retourne son ID."""
+    query = """INSERT INTO parties (id_equipe_a, id_equipe_b, id_configuration, date_debut)
+               VALUES (%s, %s, %s, NOW())
+               RETURNING id_partie;"""
+    with connexion.cursor() as cursor:
+        try:
+            cursor.execute(query, [id_equipe_a, id_equipe_b, id_configuration])
+            result = cursor.fetchone()
+            return result[0] if result else None
+        except psycopg.Error as e:
+            logger.error(e)
+    return None
+
+def terminer_partie(connexion, id_partie, id_equipe_gagnante=None):
+    """Termine une partie en enregistrant la date de fin et le gagnant."""
+    query = """UPDATE parties
+               SET date_fin = NOW(), id_equipe_gagnante = %s
+               WHERE id_partie = %s;"""
+    return execute_other_query(connexion, query, [id_equipe_gagnante, id_partie])
+
+def ajouter_action_journal(connexion, id_partie, numero_action, texte_action):
+    """Ajoute une action dans le journal de la partie."""
+    query = """INSERT INTO journal (id_partie, numero_action, date_action, texte_action)
+               VALUES (%s, %s, NOW(), %s);"""
+    return execute_other_query(connexion, query, [id_partie, numero_action, texte_action])
+
+def get_journal_partie(connexion, id_partie):
+    """Récupère le journal d'une partie."""
+    query = """SELECT numero_action, date_action, texte_action
+               FROM journal
+               WHERE id_partie = %s
+               ORDER BY numero_action;"""
+    return execute_select_query(connexion, query, [id_partie])
+

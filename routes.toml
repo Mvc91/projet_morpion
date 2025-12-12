@@ -24,11 +24,6 @@ controleur = "controleurs/jouer.py"
 template = "templates/jouer.html"
 
 [[routes]]
-url="choix"
-controleur = "controleurs/choix.py"
-template = "templates/choix.html"
-
-[[routes]]
-url="Jouer"
-controleur = "controleurs/jouer.py"
-template = "templates/jouer.html"
+url = "avance"
+controleur = "controleurs/avance.py"
+template = "templates/avance.html"

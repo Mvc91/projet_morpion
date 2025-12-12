@@ -60,7 +60,8 @@ else:
                     #verification des lignes
                     for l in range(n):
                         if all((l, col) in positions for col in range(n)):
-                            REQUEST_VARS['message'] = ('succées', f"victoire du joueur {SESSION['partie_jouer']['equipes1'] if joueur==1 else SESSION['partie_jouer']['equipes2']}")
+                            nom_gagnant = SESSION['partie_jouer']['equipes1_nom'] if joueur==1 else SESSION['partie_jouer']['equipes2_nom']
+                            REQUEST_VARS['message'] = ('victoire', f"🎉🎊 VICTOIRE ! 🎊🎉\n🏆 Félicitations à {nom_gagnant} ! 🏆\n💐🌸🌺 Ligne complète ! 🌺🌸💐")
                             fin = True
                             break
 
@@ -68,21 +69,24 @@ else:
                     if not fin:
                         for col in range(n):
                             if all((l, col) in positions for l in range(n)):
-                                REQUEST_VARS['message'] = ('succées', f"victoire du joueur {SESSION['partie_jouer']['equipes1'] if joueur==1 else SESSION['partie_jouer']['equipes2']}")
+                                nom_gagnant = SESSION['partie_jouer']['equipes1_nom'] if joueur==1 else SESSION['partie_jouer']['equipes2_nom']
+                                REQUEST_VARS['message'] = ('victoire', f"🎉🎊 VICTOIRE ! 🎊🎉\n🏆 Félicitations à {nom_gagnant} ! 🏆\n💐🌸🌺 Colonne complète ! 🌺🌸💐")
                                 fin = True
                                 break
 
                     #verification du diagonale principale
                     if not fin:
                         if all((i, i) in positions for i in range(n)):
-                            REQUEST_VARS['message'] = ('succées', f"victoire du joueur {SESSION['partie_jouer']['equipes1'] if joueur==1 else SESSION['partie_jouer']['equipes2']}")
+                            nom_gagnant = SESSION['partie_jouer']['equipes1_nom'] if joueur==1 else SESSION['partie_jouer']['equipes2_nom']
+                            REQUEST_VARS['message'] = ('victoire', f"🎉🎊 VICTOIRE ! 🎊🎉\n🏆 Félicitations à {nom_gagnant} ! 🏆\n💐🌸🌺 Diagonale complète ! 🌺🌸💐")
                             fin = True
     
                     
                     #verification du diagonale secondaire
                     if not fin:
                         if all((i, n-1-i) in positions for i in range(n)):
-                            REQUEST_VARS['message'] = ('succées', f"victoire du joueur {SESSION['partie_jouer']['equipes1'] if joueur==1 else SESSION['partie_jouer']['equipes2']}")
+                            nom_gagnant = SESSION['partie_jouer']['equipes1_nom'] if joueur==1 else SESSION['partie_jouer']['equipes2_nom']
+                            REQUEST_VARS['message'] = ('victoire', f"🎉🎊 VICTOIRE ! 🎊🎉\n🏆 Félicitations à {nom_gagnant} ! 🏆\n💐🌸🌺 Diagonale complète ! 🌺🌸💐")
                             fin = True
                     if not fin:
                         if SESSION['partie_jouer']['tour'] >= SESSION['partie_jouer']['nb_tours_max']:

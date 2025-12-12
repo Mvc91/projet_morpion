@@ -4,8 +4,10 @@
 <h2>Partie en cours</h2>
 
 {% if REQUEST_VARS.message %}
-  {% set cls = 'info' if REQUEST_VARS.message[0]=='info' else ('success' if REQUEST_VARS.message[0]=='success' else 'error') %}
-  <div class="message {{ cls }}">{{ REQUEST_VARS.message[1] }}</div>
+  {% set cls = 'info' if REQUEST_VARS.message[0]=='info' else ('success' if REQUEST_VARS.message[0]=='success' else ('victoire' if REQUEST_VARS.message[0]=='victoire' else 'error')) %}
+  <div class="message {{ cls }}" style="{% if REQUEST_VARS.message[0]=='victoire' %}background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-size: 1.5em; padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: celebration 0.5s ease;{% endif %}">
+    {{ REQUEST_VARS.message[1] | replace('\n', '<br>') | safe }}
+  </div>
 {% endif %}
 
 {%if REQUEST_VARS.grille %}
